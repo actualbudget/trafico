@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "description": "GitHub App built with Probot that automatically labels pull requests on certain conditions",
   "main": "index.js",
+  "private": true,
+  "type": "module",
   "scripts": {
     "start:dev": "nodemon --exec \"npm start\"",
     "format": "prettier --write {index,lib/**/*,test/auto-pr-labeler.test}.js"

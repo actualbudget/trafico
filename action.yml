@@ -1,24 +1,29 @@
+inputs:
+  github-token:
+    description: 'The Github token'
+    required: true
 runs:
   using: composite
   steps:
     - uses: actions/checkout@v4
       with:
-        repository: actualbudget/actions
-        path: actions
+        repository: actualbudget/trafico
+        ref: move-to-action
+        path: trafico
     - uses: actions/setup-node@v4
       with:
         node-version: 18
     - name: Install dependencies
       shell: bash
       run: |
-        cd actions/reviews
+        cd trafico
         echo '::group::npm ci'
         npm ci
         echo '::endgroup::'
     - name: Run Traffico
       id: traffico
       shell: bash
-      with:
-        github-token: ${{ github.token }}
-      run: node actions/reviews/traffico/index.js
+      env:
+        GHTOKEN: ${{ inputs.github-token }}
+      run: node trafico/index.js
 
