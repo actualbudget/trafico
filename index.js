@@ -4,8 +4,7 @@ import { Trafico } from "./lib/trafico.js";
 
 async function runTrafico() {
   try {
-    // Swap token to a getInput once we build for dist
-    const token = process.env.GHTOKEN;
+    const token = core.getInput("github-token");
     const { owner, repo } = context.repo;
     const { rest } = getOctokit(token);
     const trafico = new Trafico(rest, { owner, repo });
