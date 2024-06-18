@@ -1,48 +1,24 @@
-const debug = require("debug")("probot:trafico");
-const Raven = require("raven");
-const Trafico = require("./lib/trafico");
+import * as core from "@actions/core";
+import { context, getOctokit } from "@actions/github";
+import { Trafico } from "./lib/trafico.js";
 
-Raven.config(
-  process.env.NODE_ENV === "production" &&
-    "https://dce36edab6334112b02122e07b2bc549@sentry.io/1222067"
-).install();
+async function runTrafico() {
+  try {
+    const token = core.getInput("github-token");
+    const { owner, repo } = context.repo;
+    const { rest } = getOctokit(token);
+    const trafico = new Trafico(rest, { owner, repo });
 
-function probotPlugin(robot) {
-  const events = [
-    "pull_request.opened",
-    "pull_request.closed",
-    "pull_request.edited",
-    "pull_request.synchronize",
-    "pull_request.reopened",
-    "pull_request.review_requested",
-    "pull_request.review_request_removed",
-    "pull_request_review.edited",
-    "pull_request_review.submitted",
-    "pull_request_review.dismissed"
-  ];
+    const pullRequest = await rest.pulls.get({
+      owner,
+      repo,
+      pull_number: context.payload.pull_request.number
+    });
 
-  robot.on(events, runTrafico);
+    trafico.runTrafico(context, pullRequest.data, {});
+  } catch (error) {
+    if (error instanceof Error) core.setFailed(error.message);
+  }
 }
 
-async function runTrafico(context) {
-  const trafico = forRepository(context);
-  const pullRequest = getPullRequest(context);
-  const config = await getConfig(context);
-
-  trafico.runTrafico(context, pullRequest, config);
-}
-
-function forRepository(context) {
-  const config = Object.assign({}, context.repo({ logger: debug }));
-  return new Trafico(context.github, config);
-}
-
-function getPullRequest(context) {
-  return context.payload.pull_request || context.payload.review.pull_request;
-}
-
-async function getConfig(context) {
-  return await context.config("trafico.yml");
-}
-
-module.exports = probotPlugin;
+runTrafico();

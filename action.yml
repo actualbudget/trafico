@@ -1,0 +1,9 @@
+name: 'Trafico Review action'
+inputs:
+  github-token:
+    description: 'The Github token'
+    required: true
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
